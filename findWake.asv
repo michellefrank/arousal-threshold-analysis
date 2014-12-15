@@ -1,4 +1,4 @@
-function [arousal_index, normalized_percents, fly_sleeping_sum] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times)
+function [responses, allActivities_wake, allActivities_sleep, controlActivity] = findWake(fly, expData, stim_windows, numStim, root_dir, save_path, norm_offset)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
 % calculates the percentage that woke up, and returns that value as a cell.
@@ -55,8 +55,8 @@ spontaneous_awake_array = getIsWakes(flies,spontaneous_arousal_windows);
 
 fly_arousal_array = zeros(length(stim_indices),1);
 spontaneous_arousal_array = zeros(length(stim_indices),1);
-fly_sleeping_sum = zeros(length(stim_indices),1);
-fly_sleeping_spont = zeros(length(stim_indices),1);
+fly_sleeping = zeros(length(stim_indices,1));
+fly_sleeping_spont = zeros(length(stim_indices,1));
 
 for k = 1:length(fly_arousal_array)
     fly_arousal_array(k) = sum(fly_asleep_array{k}==1 & fly_awake_array{k}==1);
@@ -64,8 +64,7 @@ for k = 1:length(fly_arousal_array)
     spontaneous_arousal_array(k) = sum(spontaneous_asleep_array{k}==1 ...
         & spontaneous_awake_array{k}==1);
     
-    fly_sleeping_sum(k) = sum(fly_asleep_array{k});
-    fly_sleeping_spont(k) = sum(spontaneous_asleep_array{k});
+    fly_sleeping(i) = sum(fly_asleep
     
 end
 
@@ -98,13 +97,64 @@ end
 % asleep) - (spontaneous awakenings/spontaneous asleep) ) / (1 - spont.
 % fraction)
 
-fraction_awakened = sum(fly_arousal_array)/sum(fly_sleeping_sum);
-fraction_spontaneous = sum(spontaneous_arousal_array)/sum(fly_sleeping_spont);
+fraction_awakened = ;
+fraction_spontaneous = ;
 
-arousal_index = (fraction_awakened - fraction_spontaneous) / (1 - fraction_spontaneous);
+arousal_index = ;
+
+%%
+% Extract intensity stuff
+intensities = str2num(expData.stim_intensities);
+
+% Format stuff into an array with elements 
+% Stimulus Number, Stim Intensity, Normalized Percent Awakened, Percent Awakened, Percent Spontaneous
+
+LightResponsesAggregate = [];
+for i = 1:numStim
+    LightResponsesAggregate(i,1) = i;
+    LightResponsesAggregate(i,2) = intensities(i);
+    LightResponsesAggregate(i,3) = normalized_percents(i);
+    LightResponsesAggregate(i,4) = percent_arousal_array(i);
+    LightResponsesAggregate(i,5) = PercentSpontaneous(i);
+end
+
+% Sort that array by the intensities
+[Y,I] = sort(LightResponsesAggregate(:,2));
+responses = LightResponsesAggregate(I,:);
+
+
+%% Extract activity info
+
+allActivities_sleep = [];
+allActivities_wake = [];
+
+for i = 1:length(flyArray(:,1))
+    
+    for j = 1:length(flyArray(1,:))
+        
+        if flyArray{i,j}.isSleep == 0
+            
+            allActivities_wake = [allActivities_wake; intensities(i), flyArray{i,j}.activity];
+        
+        else
+            
+            allActivities_sleep = [allActivities_sleep; intensities(i), flyArray{i,j}.activity];
+        
+        end
+    end
+end
+
+% sort by intensity
+
+[Y,I] = sort(allActivities_wake(:,1));
+[y2,I2] = sort(allActivities_sleep(:,1));
+allActivities_wake = allActivities_wake(I,:);
+allActivities_sleep = allActivities_sleep(I2,:);    
+    
+
 
 %% Export the raw sleep array (of flies sleeping vs not sleeping)
-%{
+
 LightResponsesRaw = {'Stimulus Number', 'Stim intensity'};
 
 for i = 1:length(flySleepArray(1,:))
@@ -122,5 +172,5 @@ end
     
 fileSaveRaw = [fullfile(root_dir, save_path, 'raw', fly.genotype), '-raw.csv'];
 cell2csv(fileSaveRaw, LightResponsesRaw);
-%}
+
 
