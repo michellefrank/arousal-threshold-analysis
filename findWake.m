@@ -88,7 +88,7 @@ end
 normalized_percents = zeros(length(percent_arousal_array),1);
 
 for i = 1:length(normalized_percents)
-    normalized_percents(i) = ( percent_arousal_array(i) - percent_spontaneous_array(i) ) / (1 - percent_spontaneous_array(i) );
+    normalized_percents(i) = ( percent_arousal_array(i) - percent_spontaneous_array(i) ) / (1 - percent_spontaneous_array(i) ) * 100;
 end
 
 

@@ -10,6 +10,7 @@
     % Or better, just add options to do either.
 % Find way to export raw data about responsiveness for each genotype
 % Find better way to export *everything*
+% Find a smarter way to extract label/filename about data from import file
 
 
 %% Set global parameters
@@ -83,6 +84,11 @@ for i = 1:length(wakeResults)
 end
 
 figure; notBoxPlot(plot_data);
+set(gca,'XTick',1:length(genotypes));
+set(gca,'XTickLabel',genotypes);
+ylabel('Percent Awakened');
+tightfig;
+
 savefig(gcf, [save_path, 'percent-awakened']);
 
 % Arousal indices
@@ -105,6 +111,7 @@ end
 figure; plot(arousal_indices_array,'o');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
+ylabel('Arousal Index');
 tightfig;
 savefig(gcf, [save_path, 'arousal-indices'])
 
