@@ -18,14 +18,14 @@
 % recording bin. Default values are based on 30 second recording intervals.
 
 % Set the number of bins to check for sleep before a stimulus
-sleep_delay = 5; %5 min
+sleep_delay = 10; %5 min
 
 % Set the number of bins to check after a stimulus for waking
-wake_offset = 2; %Three minutes from the onset of a thirty-second stim
+wake_offset = 5; %Three minutes from the onset of a thirty-second stim
 
 % Set the offset (in number of bins) to check for normalization; if you
 % don't want to normalize, make this zero
-norm_offset = 10;
+norm_offset = 20;
 
 % Set monitor directory
 monitor_dir = 'E:\Michelle\Box Sync\Labwork\Monitor Files\';
@@ -38,7 +38,7 @@ monitor_dir = 'E:\Michelle\Box Sync\Labwork\Monitor Files\';
 expInfo = importdata(fullfile(save_path, meta_file));
 genotypes = {expInfo{4:end,2}};
 
-% Convert channel info to nums & filter dead flies.
+% Convert channel info to nums & filter 
 for i = 4:length(expInfo)
    expInfo{i,3} = str2num(expInfo{i,3}); 
    expInfo{i,3}(expInfo{i,3}<0) = [];
