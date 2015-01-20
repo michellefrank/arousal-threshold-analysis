@@ -6,11 +6,9 @@ function fly_array = getIsSleeping(flies, windows)
 % window. (1 = asleep; 0 = away)
 
 % Initialize fly array
-fly_array = cell(length(windows),1);
+fly_array = zeros(length(windows),length(flies.data(1,:)));
 
 % Identify whether the fly was sleeping during the window
 for i = 1:length(windows)
-    fly_array{i} = sum(flies.data(windows{i},:)) == 0;
+    fly_array(i,:) = sum(flies.data(windows{i},:)) == 0;
 end
-    
-    

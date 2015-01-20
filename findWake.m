@@ -1,4 +1,4 @@
-function [arousal_index, normalized_percents, fly_sleeping_sum] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times)
+function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
 % calculates the percentage that woke up, and returns that value as a cell.
@@ -30,12 +30,14 @@ sleep_windows = {};
 arousal_windows = {};
 spontaneous_sleep_windows = {};
 spontaneous_arousal_windows = {};
+activity_windows = {}; %one-minute period over which to calculate locomotor activity
 
 for k = 1:length(stim_indices)
     sleep_windows{k} = stim_indices(k)-sleep_delay:stim_indices(k)-1;
     arousal_windows{k} = stim_indices(k):stim_indices(k)+wake_offset;
     spontaneous_sleep_windows{k} = sleep_windows{k} - norm_offset;
     spontaneous_arousal_windows{k} = arousal_windows{k} - norm_offset;
+    activity_windows{k} = stim_indices(k):stim_indices(k) + (1/bin_width);
 end
 
 
@@ -45,6 +47,7 @@ fly_asleep_array = getIsSleeping(flies,sleep_windows);
 fly_awake_array = getIsWakes(flies,arousal_windows);
 spontaneous_asleep_array = getIsSleeping(flies,spontaneous_sleep_windows);
 spontaneous_awake_array = getIsWakes(flies,spontaneous_arousal_windows);
+activity_array = getActivity(flies,activity_windows);
 
 % Find number of flies awakening in response to each stimulus
 % (and the number of sleeping flies, used below)
@@ -53,22 +56,48 @@ spontaneous_awake_array = getIsWakes(flies,spontaneous_arousal_windows);
 % period following the stimulus
 % spontaneous_arousal_array does the same for flies awakening spontaneously
 
-fly_arousal_array = zeros(length(stim_indices),1);
-spontaneous_arousal_array = zeros(length(stim_indices),1);
-fly_sleeping_sum = zeros(length(stim_indices),1);
-fly_sleeping_spont = zeros(length(stim_indices),1);
+fly_arousal_array_raw = [];
+fly_arousal_array = [];
+spontaneous_arousal_array = [];
+fly_sleeping_spont = [];
 
-for k = 1:length(fly_arousal_array)
-    fly_arousal_array(k) = sum(fly_asleep_array{k}==1 & fly_awake_array{k}==1);
-    
-    spontaneous_arousal_array(k) = sum(spontaneous_asleep_array{k}==1 ...
-        & spontaneous_awake_array{k}==1);
-    
-    fly_sleeping_sum(k) = sum(fly_asleep_array{k});
-    fly_sleeping_spont(k) = sum(spontaneous_asleep_array{k});
-    
+
+% Create new logical matrix containing all flies who woke up in response to
+% the stimulus
+fly_arousal_array_raw = fly_asleep_array==1 & fly_awake_array==1;
+
+% Calculate the number of flies that awoke in response to each stim
+fly_arousal_array = sum(fly_arousal_array_raw,2);
+
+spontaneous_arousal_array = sum(spontaneous_asleep_array==1 ...
+        & spontaneous_awake_array==1,2);
+
+% Calculate the number of flies sleeping before each stim
+fly_sleeping_sum = sum(fly_asleep_array,2);
+fly_sleeping_spont = sum(spontaneous_asleep_array,2);
+
+%% Separate activity based on flies that were sleeping or already awake
+% Ultimately, returns a struct containing two arrays, each of which contain
+% the distribution of activities of flies in the minute following the onset
+% of the AT stim
+
+% initialize new structure to store this data
+activity_struct = struct;
+activity_struct.asleep = [];
+activity_struct.awake = [];
+
+for i = 1:length(activity_array)
+   %flies that woke up in response to the stim
+   activity_struct.asleep = [activity_struct.asleep activity_array{i}(fly_arousal_array_raw(i,:))];
+   
+   %flies that were sleeping before the stim
+   activity_struct.awake = [activity_struct.awake activity_array{i}(fly_asleep_array(i,:)==0)];
+   
 end
 
+%% Identify sleep latency of the flies who woke up
+
+sleep_delays = getDelays(flies.data, stim_indices, fly_arousal_array_raw, (3/(wake_offset+1)));
     
 %% Compute the percent of flies that respond to each stimulus
 
@@ -77,8 +106,8 @@ percent_spontaneous_array = zeros(1,length(fly_arousal_array));
 
 for i=1:length(percent_arousal_array)
     
-    percent_arousal_array(i) = fly_arousal_array(i) / sum(fly_asleep_array{i});
-    percent_spontaneous_array(i) = spontaneous_arousal_array(i) / sum(spontaneous_asleep_array{i});
+    percent_arousal_array(i) = fly_arousal_array(i) / fly_sleeping_sum(i);
+    percent_spontaneous_array(i) = spontaneous_arousal_array(i) / fly_sleeping_spont(i);
     
 end
 
