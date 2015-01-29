@@ -38,38 +38,19 @@ flies.data = flies.data(:,expInfo{fly,3}); %expInfo{fly,3} contains the channels
 
 %% Throw out dead flies
 
-% Option #1: automatically filter out dead flies based on some pre-defined
-% criteria (Hypnos: no activity over 24 hrs; alternatively, can go for no
-% activity after midnight on the last night or whatever else you want)
+% Automatically identify flies that don't move over the course of the night
+% (i.e. NO activity from 8 pm to 8 am) and categorize them as dead.
+% Hypnos: categorize dead flies as those with no activity over 24 hrs.
+% (Pretty sure that's what Stephen's software does, too.)
 
-% deadIndices = [];
-%
-% for i=1:length(flies.data(1,:))
-%     if(flies.data(1921:end,i)==0) %for midnight to end, use 1921:end
-%         deadIndices = [deadIndices i];
-%     end
-% end
+deadIndices = [];
 
-% Option #2:
-% Enter additional flies to throw out (numbers relative to the channels
-% actually included in this particular genotype)
-
-% deadFlies = input('Enter channel numbers of additional flies to discard: ', 's');
-% deadFlies = str2num(deadFlies);
-% 
-% deadIndices = [deadIndices deadFlies];
-
-% Option #3: Read in dead flies from the metadata file (entered manually
-% based on looking at the actograms)
-
-%{
-dead_flies = str2num(fly.dead_flies);
-deadIndices = zeros(1, length(dead_flies));
-
-for i = 1:length(dead_flies)
-    deadIndices(i) = find(channels==dead_flies(i));
+for i=1:length(flies.data(1,:))
+    if(flies.data(:,i)==0) %for midnight to end, use 1921:end
+        deadIndices = [deadIndices i];
+    end
 end
 
+
 flies.data(:,deadIndices) = [];
-%}
 
