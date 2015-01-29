@@ -5,7 +5,8 @@
 
 % To-do list
 % Find way to export raw data about responsiveness for each genotype
-% Find way to filter dead flies
+% Find better way to export *everything*
+% Find a smarter way to extract label/filename about data from import file
 
 
 %% Set global parameters
@@ -27,10 +28,11 @@ expInfo = importdata(fullfile(import_path, meta_file));
 genotypes = {expInfo{4:end,2}};
 
 % Get export path
-save_path = uigetdir(import_path);
+[~, save_path] = uigetdir(
 
 % Extract file tag for saving
 tag = [meta_file(1:4) meta_file(end-8:end-5)];
+
 
 % Convert channel info to nums & filter dead flies.
 for i = 4:length(expInfo)
@@ -152,7 +154,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Percent Awakened');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'-percent-awakened']));
+savefig(gcf, [save_path, 'percent-awakened']);
 
 % Arousal indices
 arousal_indices = {'Genotype', 'Arousal Index'};
@@ -178,7 +180,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Arousal Index');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'-arousal-indices']))
+savefig(gcf, [save_path, 'arousal-indices'])
 
 
 %% Plot activity & latency data
@@ -191,7 +193,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'-asleep-activity']));
+savefig(gcf, [save_path, 'asleep-activity']);
 
 figure('Color',[1 1 1]); plot([activities.meanAwake],'o','Color','red');
 title('Responsiveness of awake flies','fontweight','bold');
@@ -200,7 +202,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'-awake-activity']));
+savefig(gcf, [save_path, 'awake-activity']);
 
 % Latency
 figure('Color',[1 1 1]); plot([latencies.mean],'o','Color','blue');
@@ -210,10 +212,10 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'-latencies']));
+savefig(gcf, [save_path, 'latencies']);
 %% Save stuff
 % Export that data to a csv  
-cell2csv(fullfile(save_path, [tag,'-arousal_indices.csv']), arousal_indices);
+cell2csv([save_path, 'arousal_indices.csv'], arousal_indices);
 
 % Save the workspace
-save(fullfile(save_path, [tag,'-AT-data']));
+save([save_path,'AT-data']);
