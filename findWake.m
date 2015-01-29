@@ -90,14 +90,14 @@ for i = 1:length(activity_array)
    %flies that woke up in response to the stim
    activity_struct.asleep = [activity_struct.asleep activity_array{i}(fly_arousal_array_raw(i,:))];
    
-   %flies that were sleeping before the stim
+   %flies that were awake before the stim
    activity_struct.awake = [activity_struct.awake activity_array{i}(fly_asleep_array(i,:)==0)];
    
 end
 
 %% Identify sleep latency of the flies who woke up
 
-sleep_delays = getDelays(flies.data, stim_indices, fly_arousal_array_raw, (3/(wake_offset+1)));
+sleep_delays = getDelays(flies.data, stim_indices, fly_arousal_array_raw, bin_width);
     
 %% Compute the percent of flies that respond to each stimulus
 
