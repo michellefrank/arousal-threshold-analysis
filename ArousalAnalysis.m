@@ -31,7 +31,7 @@ save_path = uigetdir(import_path);
 
 % Extract file tag for saving
 tag_comps = regexp(meta_file,'-','split');
-tag = [tag_comps{1},'-',tag_comps{3},'-'];
+tag = [tag_comps{1},'-',tag_comps{3}(1:end-5), '-'];
 
 % Convert channel info to nums & filter dead flies.
 for i = 4:length(expInfo)
@@ -158,7 +158,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Percent Awakened');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'percent-awakened']));
+savefig(gcf, fullfile(save_path, [tag,'percent-awakened.fig']));
 
 % Arousal indices
 arousal_indices = {'Genotype', 'Arousal Index'};
@@ -184,7 +184,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Arousal Index');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'arousal-indices']))
+savefig(gcf, fullfile(save_path, [tag,'arousal-indices.fig']))
 
 
 %% Plot activity & latency data
@@ -197,7 +197,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'asleep-activity']));
+savefig(gcf, fullfile(save_path, [tag,'asleep-activity.fig']));
 
 figure('Color',[1 1 1]); plot([activities.meanAwake],'o','Color','red');
 title('Responsiveness of awake flies','fontweight','bold');
@@ -206,7 +206,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'awake-activity']));
+savefig(gcf, fullfile(save_path, [tag,'awake-activity.fig']));
 
 % Latency
 figure('Color',[1 1 1]); plot([latencies.mean],'o','Color','blue');
@@ -216,7 +216,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 tightfig;
 rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'latencies']));
+savefig(gcf, fullfile(save_path, [tag,'latencies.fig']));
 %% Save stuff
 % Export that data to a csv  
 cell2csv(fullfile(save_path, [tag,'arousal_indices.csv']), arousal_indices);
