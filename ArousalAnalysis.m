@@ -3,12 +3,8 @@
 % up following a given light stimulus
 % V.4 by MMF 14.12.14
 
-% To-do list
-% Find way to export raw data about responsiveness for each genotype
 
 %% Set global parameters
-% NOTE: the size of these bins will change based on the width of the
-% recording bin. Default values are based on 30 second recording intervals.
 
 % Set monitor directory
 monitor_dir = 'D:\Projects\Monitor-Files\AT\';
@@ -93,7 +89,7 @@ norm_offset = 10 / bin_width;
 % Pick stimulus file
 stim_file = expInfo{3,1};
 
-stim_times = findStim(stim_file);
+stim_times = findStim(stim_file, bin_width);
 
 %% Search through fly monitors for activity for each of the given genotypes
 % The findWake function imports the relevant data and parses arousal
