@@ -6,15 +6,13 @@
 
 %% Set global parameters
 
-% Set monitor directory
-monitor_dir = 'D:\Projects\Monitor-Files\AT\';
-
 % Set envMon num
 envMon_num = '4';
 
 %% Import experimental metadata and extract parameters for export
 
 % Import metadata
+disp('Select experimental metadata');
 [meta_file, import_path] = uigetfile('D:\Projects\Gal4-Screen\*.xlsx');
 
 expInfo = importdata(fullfile(import_path, meta_file));
@@ -23,21 +21,25 @@ genotypes = {expInfo{4:end,2}};
 num_genos = length(genotypes);
 
 % Get export path
+disp('Select output directory');
 save_path = uigetdir(import_path);
 
 % Extract file tag for saving
 tag_comps = regexp(meta_file,'-','split');
 tag = [tag_comps{1},'-',tag_comps{3}(1:end-5), '-'];
 
-% Convert channel info to nums & filter dead flies.
+% Convert channel info to nums
 for i = 4:length(expInfo)
    expInfo{i,3} = str2num(expInfo{i,3}); 
    expInfo{i,3}(expInfo{i,3}<0) = [];
 end
 
+% Select monitor directory
+disp('Select monitor directory');
+monitor_dir = uigetdir(import_path);
 %% Extract bin width & set offsets
 
-envMon = importdata([monitor_dir, 'Monitor', envMon_num, '.txt']);
+envMon = importdata(fullfile(monitor_dir, ['Monitor', envMon_num, '.txt']));
 
 % Cut down envMon size to days of experiment
     % Identify start & end indices (expInfo{1,1} and {2,1} contain the start
@@ -152,7 +154,6 @@ title('Arousability','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Percent Awakened');
-tightfig;
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'percent-awakened.fig']));
 
@@ -178,7 +179,6 @@ title('Arousability','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Arousal Index');
-tightfig;
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'arousal-indices.fig']))
 
@@ -191,7 +191,6 @@ title('Responsiveness of sleeping flies','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
-tightfig;
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'asleep-activity.fig']));
 
@@ -200,7 +199,6 @@ title('Responsiveness of awake flies','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
-tightfig;
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'awake-activity.fig']));
 
@@ -210,7 +208,6 @@ title('Mean latency to sleep following stimulus','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
-tightfig;
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'latencies.fig']));
 %% Save stuff

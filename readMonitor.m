@@ -5,7 +5,7 @@ function flies = readMonitor(monitor_dir, expInfo, fly)
 
 %% Read in data files
 
-flies = importdata([monitor_dir, expInfo{fly,1}, '.txt']);
+flies = importdata(fullfile(monitor_dir, [expInfo{fly,1}, '.txt']));
 
 % Trim down file to days and times of interest
 

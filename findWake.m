@@ -121,6 +121,10 @@ for i = 1:length(normalized_percents)
 end
 
 
+%% Throw out conditions in which less than 8 flies were asleep
+% If either fly_sleeping_sum or fly_sleeping_spont <8, toss out that trial
+normalized_percents = normalized_percents(fly_sleeping_spont>=8 & fly_sleeping_sum>=8);
+
 %% Calculate aggregate fraction of responsive flies
 % The 'arousal index' is the normalized fraction of flies that responded
 % over all of the stimuli, calculated as ( (all flies awakened)/(all flies
