@@ -137,6 +137,9 @@ end
 % Percentages per stim
 normed_percents = [];
 normed_percents_cell = genotypes;
+normed_means = nanmean(normed_percents);
+tot_mean = nanmean(normed_means);
+normed_std = nanstd(normed_means);
 
 for i = 1:num_genos
     
@@ -148,17 +151,11 @@ for i = 1:num_genos
     
 end
 
-normed_means = nanmean(normed_percents);
-tot_mean = nanmean(normed_means);
-normed_std = nanstd(normed_means);
-
 % Plot it!
 figure('Color', [1 1 1]); notBoxPlot(normed_percents);
 hold on; line([0 num_genos+5], [tot_mean tot_mean], 'Color', 'k');
-line([0 num_genos+5], [tot_mean+normed_std tot_mean+normed_std], 'Color', [0.8 0.8 0.8]);
-line([0 num_genos+5], [tot_mean-normed_std tot_mean-normed_std], 'Color', [0.8 0.8 0.8]);
-line([0 num_genos+5], [tot_mean+2*normed_std tot_mean+2*normed_std], 'Color', [0.6 0.6 0.6]); 
-line([0 num_genos+5], [tot_mean-2*normed_std tot_mean-2*normed_std], 'Color', [0.6 0.6 0.6]); 
+line([0 num_genos+5], [tot_mean+normed_std tot_mean+normed_std], 'Color', [0.5 0.5 0.5]);
+line([0 num_genos+5], [tot_mean-2*normed_std tot_mean-2*normed_std], 'Color', [0.5 0.5 0.5]); 
 title('Arousability','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
