@@ -1,4 +1,4 @@
-function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
+function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, fly_sleep_durations] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
 % calculates the percentage that woke up, and returns that value as a cell.
@@ -121,8 +121,8 @@ for i = 1:length(normalized_percents)
 end
 
 
-%% Throw out conditions in which less than 8 flies were asleep
-% If either fly_sleeping_sum or fly_sleeping_spont <8, toss out that trial
+%% Throw out conditions in which less than 6 flies were asleep
+% If either fly_sleeping_sum or fly_sleeping_spont <6, toss out that trial
 
 normalized_percents(fly_sleeping_spont<6 | fly_sleeping_sum<6) = NaN;
 
@@ -136,25 +136,3 @@ fraction_awakened = sum(fly_arousal_array)/sum(fly_sleeping_sum);
 fraction_spontaneous = sum(spontaneous_arousal_array)/sum(fly_sleeping_spont);
 
 arousal_index = (fraction_awakened - fraction_spontaneous) / (1 - fraction_spontaneous);
-
-%% Export the raw sleep array (of flies sleeping vs not sleeping)
-%{
-LightResponsesRaw = {'Stimulus Number', 'Stim intensity'};
-
-for i = 1:length(flySleepArray(1,:))
-    LightResponsesRaw{1,i+2} = '';
-end
-
-for i = 1:numStim
-    LightResponsesRaw{i+1,1} = i;
-    LightResponsesRaw{i+1,2} = intensities(i);
-    
-    for j = 1:length(flySleepArray(1,:))
-        LightResponsesRaw{i+1,j+2} = flySleepArray(i,j);
-    end
-end
-    
-fileSaveRaw = [fullfile(root_dir, save_path, 'raw', fly.genotype), '-raw.csv'];
-cell2csv(fileSaveRaw, LightResponsesRaw);
-%}
-
