@@ -1,7 +1,7 @@
 % Script for reading in metadata about experiment parameters, importing
 % relevant monitor data, and calculating the percentage of flies that wake
 % up following a given light stimulus
-% V.4 by MMF 14.12.14
+% V.5 by MMF 03.15
 
 
 %% Set global parameters

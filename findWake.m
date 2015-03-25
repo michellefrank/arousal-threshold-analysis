@@ -43,9 +43,9 @@ end
 
 %% Calculate which flies were sleeping & which flies woke up
 
-fly_asleep_array = getIsSleeping(flies,sleep_windows);
+[fly_asleep_array,fly_sleep_durations] = getIsSleeping(flies,sleep_windows,bin_width);
 fly_awake_array = getIsWakes(flies,arousal_windows);
-spontaneous_asleep_array = getIsSleeping(flies,spontaneous_sleep_windows);
+[spontaneous_asleep_array,spont_sleep_durations] = getIsSleeping(flies,spontaneous_sleep_windows,bin_width);
 spontaneous_awake_array = getIsWakes(flies,spontaneous_arousal_windows);
 activity_array = getActivity(flies,activity_windows);
 
@@ -123,6 +123,7 @@ end
 
 %% Throw out conditions in which less than 8 flies were asleep
 % If either fly_sleeping_sum or fly_sleeping_spont <8, toss out that trial
+
 normalized_percents(fly_sleeping_spont<6 | fly_sleeping_sum<6) = NaN;
 
 %% Calculate aggregate fraction of responsive flies
