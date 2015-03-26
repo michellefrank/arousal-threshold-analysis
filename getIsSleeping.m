@@ -21,8 +21,13 @@ for i = 1:length(windows)
     temp_flies = flies.data(1:windows{i}(end),:);
     
     for k = 1:num_flies
-        last_bin = find(temp_flies(:,k),1,'last');
-        duration_array(i,k) = (windows{i}(end) - last_bin)*bin_width;
+        % In case they never move, return a NaN
+        if sum(temp_flies(:,k))==0
+            duration_array(i,k) = NaN;
+        else
+            last_bin = find(temp_flies(:,k),1,'last');
+            duration_array(i,k) = (windows{i}(end) - last_bin)*bin_width;
+        end
     end
     
 end

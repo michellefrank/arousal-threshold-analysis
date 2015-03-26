@@ -1,4 +1,4 @@
-function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, fly_sleep_durations] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
+function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, fly_sleep_durations, wake_durations, wake_activities] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
 % calculates the percentage that woke up, and returns that value as a cell.
@@ -99,6 +99,11 @@ end
 
 sleep_delays = getDelays(flies.data, stim_indices, fly_arousal_array_raw, bin_width);
     
+%% Identify info about the prior wake period for flies that were sleeping
+
+[wake_durations, wake_activities] = getWakeDurations(flies.data, stim_indices, fly_asleep_array, bin_width);
+
+
 %% Compute the percent of flies that respond to each stimulus
 
 percent_arousal_array = zeros(1,length(fly_arousal_array));
