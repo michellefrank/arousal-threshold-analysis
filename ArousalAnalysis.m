@@ -112,7 +112,8 @@ for i = 1:length(expInfo)-3
     
     [wakeResults(i).arousal_index, wakeResults(i).normalized_percents, ... 
         wakeResults(i).fly_sleeping_sum, wakeResults(i).activity_struct, wakeResults(i).sleep_delays,...
-        wakeResults(i).sleep_durations, wakeResults(i).wake_durations, wakeResults(i).wake_activities] = ...
+        wakeResults(i).sleep_durations, wakeResults(i).wake_durations, ...
+        wakeResults(i).wake_activities, wakeResults(i).arousal_probabilities] = ...
         findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width);
     
     % Add data to activity struct
@@ -133,7 +134,7 @@ for i = 1:length(expInfo)-3
     
 end
 
-%% Make summary graphs
+%% Make summary graphs: arousability
 
 % Percentages per stim
 normed_percents = [];
@@ -192,6 +193,34 @@ ylabel('Arousal Index');
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'arousal-indices.fig']))
 
+
+%% Per-fly arousability
+
+% Calculate max number of flies
+num_flies = zeros(1,num_genos);
+for i = 1:num_genos
+    num_flies(i) = length(wakeResults(i).arousal_probabilities);
+end
+
+max_num_flies = max(num_flies);
+
+% Initialize array to hold various probabilities
+arousal_probabilities_array = zeros(max_num_flies,num_genos);
+arousal_probabilities_array(:,:) = NaN;
+
+% Add arousal probabilities for individual flies
+for i = 1:num_genos
+    arousal_probabilities_array(1:length(wakeResults(i).arousal_probabilities),i) = wakeResults(i).arousal_probabilities';
+end
+
+% Plot the data
+figure('Color', [1 1 1]); notBoxPlot(arousal_probabilities_array);
+title('Arousal probabilities (individual flies)','fontweight','bold');
+set(gca,'XTick',1:length(genotypes));
+set(gca,'XTickLabel',genotypes);
+ylabel('Probability of arousal');
+rotateticklabel(gca,45);
+savefig(gcf, fullfile(save_path, [tag,'arousal-probabilities.fig']))
 
 %% Plot activity & latency data
 

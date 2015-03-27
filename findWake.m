@@ -1,4 +1,4 @@
-function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, fly_sleep_durations, wake_durations, wake_activities] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
+function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, fly_sleep_durations, wake_durations, wake_activities, arousal_prob] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
 % calculates the percentage that woke up, and returns that value as a cell.
@@ -59,12 +59,15 @@ activity_array = getActivity(flies,activity_windows);
 fly_arousal_array_raw = [];
 fly_arousal_array = [];
 spontaneous_arousal_array = [];
+spontaneous_arousal_raw = [];
 fly_sleeping_spont = [];
 
 
 % Create new logical matrix containing all flies who woke up in response to
 % the stimulus
 fly_arousal_array_raw = fly_asleep_array==1 & fly_awake_array==1;
+spontaneous_arousal_raw = spontaneous_asleep_array==1 & ...
+    spontaneous_awake_array==1;
 
 % Calculate the number of flies that awoke in response to each stim
 fly_arousal_array = sum(fly_arousal_array_raw,2);
@@ -141,3 +144,29 @@ fraction_awakened = sum(fly_arousal_array)/sum(fly_sleeping_sum);
 fraction_spontaneous = sum(spontaneous_arousal_array)/sum(fly_sleeping_spont);
 
 arousal_index = (fraction_awakened - fraction_spontaneous) / (1 - fraction_spontaneous);
+
+
+%% Calculate arousal index on a per-fly basis
+
+% Initialize array
+arousal_prob = zeros(1,length(fly_arousal_array_raw));
+
+% Calculate how often each fly woke up in response to the stim
+times_awakened = sum(fly_arousal_array_raw);
+times_awakened_spont = sum(spontaneous_arousal_raw);
+
+% Calculate on how many occasions each fly was sleeping
+times_asleep = sum(fly_asleep_array);
+times_asleep_spont = sum(spontaneous_asleep_array);
+
+% Calculate the fraction of times the flies woke up
+fract_awakened_per_fly = times_awakened./times_asleep;
+fract_spont_per_fly = times_awakened_spont./times_asleep_spont;
+
+% Calculate the per-fly arousal index
+arousal_prob = (fract_awakened_per_fly - fract_spont_per_fly) ...
+    ./ (1 - fract_spont_per_fly);
+
+% Toss flies who were asleep for less than 5 trials
+arousal_prob(times_asleep < 5 | times_asleep_spont < 5) = NaN;
+
