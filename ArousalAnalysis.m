@@ -78,9 +78,9 @@ clear t1 t2 timeidx time1 time2
 % Set the number of bins to check for sleep before a stimulus
 sleep_delay = 5 / bin_width; %5 min
 
-% Set the number of bins to check after a stimulus for waking (three
+% Set the number of bins to check after a stimulus for waking (two
 % minutes, plus the bin in which the stim occured)
-wake_offset = (3 / bin_width) - 1;
+wake_offset = (2 / bin_width) - 1;
 
 % Set the offset (in number of bins) to check for normalization; if you
 % don't want to normalize, make this zero. Default value is 10 min.
@@ -113,7 +113,7 @@ for i = 1:length(expInfo)-3
     [wakeResults(i).arousal_index, wakeResults(i).normalized_percents, ... 
         wakeResults(i).fly_sleeping_sum, wakeResults(i).activity_struct, wakeResults(i).sleep_delays,...
         wakeResults(i).sleep_durations, wakeResults(i).wake_durations, ...
-        wakeResults(i).wake_activities, wakeResults(i).arousal_probabilities] = ...
+        wakeResults(i).wake_activities, wakeResults(i).arousal_probabilities, wakeResults(i).avg_percent_spontaneous] = ...
         findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width);
     
     % Add data to activity struct
@@ -199,7 +199,7 @@ for i = 1:num_genos
 end
 
 % plot that
-figure('Color', [1 1 1]); plot(arousal_indices_array,'o');
+figure('Color', [1 1 1]); plot(arousal_indices_array,'ok','markersize',5,'markerfacecolor',[0.8,0.8,0.8]);
 title('Arousability','fontweight','bold');
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
@@ -273,6 +273,17 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Minutes');
 rotateticklabel(gca,45);
 savefig(gcf, fullfile(save_path, [tag,'latencies.fig']));
+
+%% Plot average spontaneous arousals
+
+figure('Color', [1 1 1]); plot([wakeResults.avg_percent_spontaneous], 'ok', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
+title('Mean percent spontaneous arousals','fontweight','bold');
+set(gca,'XTick',1:length(genotypes));
+set(gca,'XTickLabel',genotypes);
+ylabel('Mean percent of flies awakening');
+rotateticklabel(gca,45);
+savefig(gcf, fullfile(save_path, [tag,'avg_spontaneous.fig']));
+
 %% Save stuff
 % Export that data to a csv  
 cell2csv(fullfile(save_path, [tag,'arousal_indices.csv']), arousal_indices);

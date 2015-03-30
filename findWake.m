@@ -1,4 +1,6 @@
-function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, fly_sleep_durations, wake_durations, wake_activities, arousal_prob] = findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
+function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, ...
+    fly_sleep_durations, wake_durations, wake_activities, arousal_prob, mean_spontaneous] = ...
+    findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
 % calculates the percentage that woke up, and returns that value as a cell.
@@ -41,7 +43,6 @@ for k = 1:length(stim_indices)
     activity_windows{k, 2} = activity_windows{k,1}(end)+1:stim_indices(k) + (2/bin_width - 1);
     activity_windows{k, 3} = activity_windows{k,2}(end)+1:stim_indices(k) + (3/bin_width - 1);
 end
-
 
 %% Calculate which flies were sleeping & which flies woke up
 
@@ -129,6 +130,10 @@ for i=1:length(percent_arousal_array)
     percent_spontaneous_array(i) = spontaneous_arousal_array(i) / fly_sleeping_spont(i);
     
 end
+
+% Compute average percent spontaneous arousals (as a kind of metric for how
+% likely the flies are to wake up on their own)
+mean_spontaneous = nanmean(percent_spontaneous_array) * 100;
 
 %% Normalization
 
