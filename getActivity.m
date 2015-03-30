@@ -4,9 +4,11 @@ function activity_array = getActivity(flies,windows)
 % following the onset of a stimulus
 
 % Initialize activity array
-activity_array = cell(length(windows),1);
+activity_array = cell(length(windows),3);
 
-% Identify whether the fly was awake for any point during the window
+% Extract activity for the fly during the window
 for i = 1:length(windows)
-    activity_array{i} = sum(flies.data(windows{i},:));
+    activity_array{i,1} = sum(flies.data(windows{i,1},:));
+    activity_array{i,2} = sum(flies.data(windows{i,2},:));
+    activity_array{i,3} = sum(flies.data(windows{i,3},:));
 end

@@ -30,14 +30,16 @@ sleep_windows = {};
 arousal_windows = {};
 spontaneous_sleep_windows = {};
 spontaneous_arousal_windows = {};
-activity_windows = {}; %one-minute period over which to calculate locomotor activity
+activity_windows = {}; %one-, two-, and three-minute periods over which to calculate locomotor activity
 
 for k = 1:length(stim_indices)
     sleep_windows{k} = stim_indices(k)-sleep_delay:stim_indices(k)-1;
     arousal_windows{k} = stim_indices(k):stim_indices(k)+wake_offset;
     spontaneous_sleep_windows{k} = sleep_windows{k} - norm_offset;
     spontaneous_arousal_windows{k} = arousal_windows{k} - norm_offset;
-    activity_windows{k} = stim_indices(k):stim_indices(k) + (1/bin_width);
+    activity_windows{k, 1} = stim_indices(k):stim_indices(k) + (1/bin_width - 1);
+    activity_windows{k, 2} = activity_windows{k,1}(end)+1:stim_indices(k) + (2/bin_width - 1);
+    activity_windows{k, 3} = activity_windows{k,2}(end)+1:stim_indices(k) + (3/bin_width - 1);
 end
 
 
@@ -86,15 +88,24 @@ fly_sleeping_spont = sum(spontaneous_asleep_array,2);
 
 % initialize new structure to store this data
 activity_struct = struct;
-activity_struct.asleep = [];
-activity_struct.awake = [];
+activity_struct(1).asleep = [];
+activity_struct(1).awake = [];
+activity_struct(2).asleep = [];
+activity_struct(2).awake = [];
+activity_struct(3).asleep = [];
+activity_struct(3).awake = [];
 
 for i = 1:length(activity_array)
    %flies that woke up in response to the stim
-   activity_struct.asleep = [activity_struct.asleep activity_array{i}(fly_arousal_array_raw(i,:))];
-   
+   activity_struct(1).asleep = [activity_struct(1).asleep activity_array{i,1}(fly_arousal_array_raw(i,:))];
+   activity_struct(2).asleep = [activity_struct(2).asleep activity_array{i,2}(fly_arousal_array_raw(i,:))];
+   activity_struct(3).asleep = [activity_struct(3).asleep activity_array{i,3}(fly_arousal_array_raw(i,:))];
+
    %flies that were awake before the stim
-   activity_struct.awake = [activity_struct.awake activity_array{i}(fly_asleep_array(i,:)==0)];
+   activity_struct(1).awake = [activity_struct(1).awake activity_array{i,1}(fly_asleep_array(i,:)==0)];
+   activity_struct(2).awake = [activity_struct(2).awake activity_array{i,2}(fly_asleep_array(i,:)==0)];
+   activity_struct(3).awake = [activity_struct(3).awake activity_array{i,3}(fly_asleep_array(i,:)==0)];
+
    
 end
 
