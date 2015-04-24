@@ -36,7 +36,9 @@ end
 
 % Select monitor directory
 disp('Select monitor directory');
-monitor_dir = uigetdir(import_path);
+split = regexp(import_path,'\');
+monitor_dir = uigetdir(import_path(1:split(end-1)));
+clear split
 %% Extract bin width & set offsets
 
 envMon = importdata(fullfile(monitor_dir, ['Monitor', envMon_num, '.txt']));
@@ -104,9 +106,15 @@ latencies = struct; %create separate array to store data about sleep delay after
 
 fly = 0; %Initialize variable to loop through genotypes
 
+% Initialize wait bar to track progress
+
+h = waitbar(num_genos, 'Processing...');
+
 for i = 1:length(expInfo)-3
     
     fly = i+3;
+    
+    waitbar(fly/num_genos, h, ['Processing: ', expInfo{fly,2}]);
     
     wakeResults(i).genotype = expInfo{fly,2};
     
@@ -227,9 +235,19 @@ for i = 1:num_genos
     arousal_probabilities_array(1:length(wakeResults(i).arousal_probabilities),i) = wakeResults(i).arousal_probabilities';
 end
 
+% Find group properties
+gp_means = nanmean(arousal_probabilities_array);
+at_prob_mean = nanmean(gp_means);
+at_prob_sd = nanstd(gp_means);
+
 % Plot the data
 notBoxPlot2(arousal_probabilities_array);
 title('Arousal probabilities (individual flies)','fontweight','bold');
+hold on; line([0 num_genos+5], [at_prob_mean at_prob_mean], 'Color', 'k');
+line([0 num_genos+5], [at_prob_mean+at_prob_sd at_prob_mean+at_prob_sd], 'Color', [0.8 0.8 0.8]);
+line([0 num_genos+5], [at_prob_mean-at_prob_sd at_prob_mean-at_prob_sd], 'Color', [0.8 0.8 0.8]);
+line([0 num_genos+5], [at_prob_mean+2*at_prob_sd at_prob_mean+2*at_prob_sd], 'Color', [0.6 0.6 0.6]); 
+line([0 num_genos+5], [at_prob_mean-2*at_prob_sd at_prob_mean-2*at_prob_sd], 'Color', [0.6 0.6 0.6]); 
 set(gca,'XTick',1:length(genotypes));
 set(gca,'XTickLabel',genotypes);
 ylabel('Probability of arousal');
