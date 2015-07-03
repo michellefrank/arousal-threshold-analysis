@@ -18,6 +18,23 @@ function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct,
 %about
 flies = readMonitor(monitor_dir, expInfo, fly);
 
+% Deal with possibility that all flies are dead
+if isempty(flies.data)
+    disp(['All flies in ', expInfo{fly, 2}, ' are dead. :('])
+    arousal_index = NaN;
+    normalized_percents(1:length(stim_times),1) = NaN;
+    fly_sleeping_sum = NaN;
+    [activity_struct(1:3).asleep] = deal(NaN);
+    [activity_struct(1:3).awake] = deal(NaN);
+    sleep_delays = NaN;
+    fly_sleep_durations = NaN; 
+    wake_durations = NaN; 
+    wake_activities = NaN; 
+    arousal_prob = NaN; 
+    mean_spontaneous = NaN;
+    return
+end
+
 %% Calculate indices & windows for relevant times
 
 % Convert stim times to stim indices

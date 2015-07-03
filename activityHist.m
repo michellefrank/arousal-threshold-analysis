@@ -8,6 +8,13 @@ act_hist = struct;
 act_hist.awake = struct;
 act_hist.asleep = struct;
 
+% Check whether all flies are dead (in which case act_struct==NaN)
+
+if isnan(act_struct(1).awake)
+    act_hist_frac = NaN;
+    return
+end
+
 [act_hist.asleep.y, act_hist.asleep.x] = hist(act_struct.asleep,max(act_struct.asleep));
 [act_hist.awake.y, act_hist.awake.x] = hist(act_struct.awake,max(act_struct.awake));
 
