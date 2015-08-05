@@ -35,10 +35,16 @@ for i = 4:length(expInfo)
 end
 
 % Select monitor directory
-disp('Select monitor directory');
-split = regexp(import_path,'\');
-monitor_dir = uigetdir(import_path(1:split(end-1)));
-clear split
+% First try to find a folder called 'Monitors' in the parent dir
+path_components = regexp(import_path, '\', 'split');
+tent_mon_dir = fullfile(path_components{1:end-2}, 'Monitors');
+if exist(tent_mon_dir, 'file')
+    monitor_dir = tent_mon_dir;
+else
+    disp('Select monitor directory');
+    monitor_dir = uigetdir(fullfile(path_components{1:end-2}));
+end
+clear tent_mon_dir path_components
 %% Extract bin width & set offsets
 
 envMon = importdata(fullfile(monitor_dir, ['Monitor', envMon_num, '.txt']));
