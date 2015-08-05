@@ -23,7 +23,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Percent Awakened');
 rotateticklabel(gca,45);
 set(gcf, 'Position', [100 100 1000 600]);
-savefig(gcf, fullfile(save_path, [tag,'percent-awakened.fig']));
+savefig(gcf, fullfile(save_path, [tag,'percent_awakened.fig']));
 
 %% Plot per-fly arousability
 
@@ -45,7 +45,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Probability of arousal');
 rotateticklabel(gca,45);
 set(gcf, 'Position', [100 100 1000 600]);
-savefig(gcf, fullfile(save_path, [tag,'arousal-probabilities.fig']))
+savefig(gcf, fullfile(save_path, [tag,'arousal_probabilities.fig']))
 
 %% Plot arousal indices
 
@@ -56,7 +56,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Arousal Index');
 rotateticklabel(gca,45);
 set(gcf, 'Position', [100 100 1000 600]);
-savefig(gcf, fullfile(save_path, [tag,'arousal-indices.fig']))
+savefig(gcf, fullfile(save_path, [tag,'arousal_indices.fig']))
 
 %% Plot activity data (just the second minute)
 
@@ -78,7 +78,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 rotateticklabel(gca,45);
 set(gcf, 'Position', [100 100 1000 600]);
-savefig(gcf, fullfile(save_path, [tag,'asleep-activity.fig']));
+savefig(gcf, fullfile(save_path, [tag,'asleep_activity.fig']));
 
 % Plot averages separated by minute
 figure('Color',[1 1 1]); plot(avg_asleep_activity(1,:),'o','Color','red','markerfacecolor','red','markersize',4);
@@ -91,7 +91,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 rotateticklabel(gca,45);
 set(gcf, 'Position', [100 100 1000 600]);
-savefig(gcf, fullfile(save_path, [tag,'asleep-activity.fig']));
+savefig(gcf, fullfile(save_path, [tag,'asleep_activity.fig']));
 
 figure('Color',[1 1 1]); plot(avg_awake_activity(1,:),'o','Color','red','markerfacecolor','red','markersize',4);
 hold on; plot(avg_awake_activity(2,:),'o','Color','b','markerfacecolor','b','markersize',4);
@@ -103,7 +103,7 @@ set(gca,'XTickLabel',genotypes);
 ylabel('Beam crossings/minute');
 rotateticklabel(gca,45);
 set(gcf, 'Position', [100 100 1000 600]);
-savefig(gcf, fullfile(save_path, [tag,'awake-activity.fig']));
+savefig(gcf, fullfile(save_path, [tag,'awake_activity.fig']));
 
 %% Plot latency
 notBoxPlot2(latency_array);
