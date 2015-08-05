@@ -162,6 +162,8 @@ for i = 1:length(expInfo)-3
     
 end
 
+% Get rid of the waitbar
+close(h)
 %% Make summary graphs: arousability
 
 % Percentages per stim
