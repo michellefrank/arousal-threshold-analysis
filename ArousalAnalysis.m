@@ -107,8 +107,6 @@ stim_times = findStim(stim_file, bin_width);
 
 % Create cell array of structs to house all of the data
 wakeResults = struct;
-activities = struct; %create separate array to store aggregated activity data
-latencies = struct; %create separate array to store data about sleep delay after stim
 
 fly = 0; %Initialize variable to loop through genotypes
 
@@ -130,101 +128,12 @@ for i = 1:length(expInfo)-3
         wakeResults(i).wake_activities, wakeResults(i).arousal_probabilities, wakeResults(i).avg_percent_spontaneous] = ...
         findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width);
     
-    % Add data to activity struct
-    activities(i).genotype = wakeResults(i).genotype;
-    [activities(i).hist, activities(i).fract_hist] = activityHist(wakeResults(i).activity_struct(1));
-    activities(i).meanSleeping(1,:) = mean(wakeResults(i).activity_struct(1).asleep);
-    activities(i).meanAwake(1,:) = mean(wakeResults(i).activity_struct(1).awake);
-    activities(i).stdSleeping(1,:) = std(wakeResults(i).activity_struct(1).asleep);
-    activities(i).stdAwake(1,:) = std(wakeResults(i).activity_struct(1).awake);
-    activities(i).semSleeping(1,:) = sem(wakeResults(i).activity_struct(1).asleep);
-    activities(i).semAwake(1,:) = sem(wakeResults(i).activity_struct(1).awake);
-    % 2nd minute
-    activities(i).meanSleeping(2,:) = mean(wakeResults(i).activity_struct(2).asleep);
-    activities(i).meanAwake(2,:) = mean(wakeResults(i).activity_struct(2).awake);
-    activities(i).stdSleeping(2,:) = std(wakeResults(i).activity_struct(2).asleep);
-    activities(i).stdAwake(2,:) = std(wakeResults(i).activity_struct(2).awake);
-    activities(i).semSleeping(2,:) = sem(wakeResults(i).activity_struct(2).asleep);
-    activities(i).semAwake(2,:) = sem(wakeResults(i).activity_struct(2).awake);
-    % 3rd minute
-    activities(i).meanSleeping(3,:) = mean(wakeResults(i).activity_struct(3).asleep);
-    activities(i).meanAwake(3,:) = mean(wakeResults(i).activity_struct(3).awake);
-    activities(i).stdSleeping(3,:) = std(wakeResults(i).activity_struct(3).asleep);
-    activities(i).stdAwake(3,:) = std(wakeResults(i).activity_struct(3).awake);
-    activities(i).semSleeping(3,:) = sem(wakeResults(i).activity_struct(3).asleep);
-    activities(i).semAwake(3,:) = sem(wakeResults(i).activity_struct(3).awake);
-    
-    % Add data to latency struct
-    latencies(i).genotype = wakeResults(i).genotype;
-    latencies(i).mean = mean(wakeResults(i).sleep_delays);
-    latencies(i).std = std(wakeResults(i).sleep_delays);
-    latencies(i).sem = sem(wakeResults(i).sleep_delays);
-    
 end
 
 % Get rid of the waitbar
 close(h)
-%% Make summary graphs: arousability
 
-% Percentages per stim
-normed_percents = [];
-normed_percents_cell = genotypes;
-
-for i = 1:num_genos
-    
-    normed_percents = [normed_percents wakeResults(i).normalized_percents];
-
-    for k = 1:length(stim_times)
-        normed_percents_cell{k+1,i} = wakeResults(i).normalized_percents(k);
-    end
-    
-end
-
-normed_means = nanmean(normed_percents);
-tot_mean = nanmean(normed_means);
-normed_std = nanstd(normed_means);
-
-% Plot it!
-notBoxPlot2(normed_percents);
-hold on; line([0 num_genos+5], [tot_mean tot_mean], 'Color', 'k');
-line([0 num_genos+5], [tot_mean+normed_std tot_mean+normed_std], 'Color', [0.8 0.8 0.8]);
-line([0 num_genos+5], [tot_mean-normed_std tot_mean-normed_std], 'Color', [0.8 0.8 0.8]);
-line([0 num_genos+5], [tot_mean+2*normed_std tot_mean+2*normed_std], 'Color', [0.6 0.6 0.6]); 
-line([0 num_genos+5], [tot_mean-2*normed_std tot_mean-2*normed_std], 'Color', [0.6 0.6 0.6]); 
-title('Arousability','fontweight','bold');
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Percent Awakened');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'percent-awakened.fig']));
-
-% Arousal indices
-arousal_indices = {'Genotype', 'Arousal Index'};
-arousal_indices_array = [];
-
-index = 2;
-
-for i = 1:num_genos
-   
-    arousal_indices{index,1} = wakeResults(i).genotype;
-    arousal_indices{index,2} = wakeResults(i).arousal_index;
-    arousal_indices_array(i) = wakeResults(i).arousal_index;
-    
-    index = index+1;
-    
-end
-
-% plot that
-figure('Color', [1 1 1]); plot(arousal_indices_array,'ok','markersize',5,'markerfacecolor',[0.8,0.8,0.8]);
-title('Arousability','fontweight','bold');
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Arousal Index');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'arousal-indices.fig']))
-
-
-%% Per-fly arousability
+%% Parse latency data
 
 % Calculate max number of flies
 num_flies = zeros(1,num_genos);
@@ -234,87 +143,97 @@ end
 
 max_num_flies = max(num_flies);
 
+% Initialize array to hold latency data
+latency_array = zeros(max_num_flies, num_genos);
+latency_array(:,:) = NaN;
+
+for i = 1:num_genos
+    latency_array(1:size(wakeResults(i).sleep_delays,2),i)...
+        =  nanmean(wakeResults(i).sleep_delays,1)';
+end
+
+% Create latency cell to hold data on mean latency to sleep onset for each
+% fly of each genotype
+latency_cell = genotypes;
+latency_cell(2:max_num_flies+1, 1:num_genos) = num2cell(latency_array(:,:));
+
+%% Parse activity data
+
+% Initialize struct to hold activity data
+activity_struct = struct;
+
+activity_struct.awake = zeros(max_num_flies, num_genos);
+activity_struct.asleep = zeros(max_num_flies, num_genos);
+
+activity_struct.awake(:,:) = NaN;
+activity_struct.asleep(:,:) = NaN;
+
+avg_awake_activity = zeros(3, num_genos);
+avg_asleep_activity = zeros(3, num_genos);
+
+% Extract activity info for each genotype
+for i = 1:num_genos
+    activity_struct.awake(1:size(wakeResults(i).activity_struct(2).awake,2),i)...
+        = nanmean(wakeResults(i).activity_struct(2).awake,1)';
+    
+    activity_struct.asleep(1:size(wakeResults(i).activity_struct(2).asleep,2),i)...
+        = nanmean(wakeResults(i).activity_struct(2).asleep)';
+    
+    for k = 1:3
+        avg_awake_activity(k, i) = nanmean(nanmean(wakeResults(i).activity_struct(k).awake));
+        avg_asleep_activity(k,i) = nanmean(nanmean(wakeResults(i).activity_struct(k).asleep));
+    end
+    
+end
+
+% Create cells to hold activity data
+awake_activity_cell = genotypes;
+asleep_activity_cell = genotypes;
+
+awake_activity_cell(2:max_num_flies+1, 1:num_genos) ...
+    = num2cell(activity_struct.awake(:,:));
+asleep_activity_cell(2:max_num_flies+1, 1:num_genos) ...
+    = num2cell(activity_struct.asleep(:,:));
+
+%% Extract arousability data
+
+% Percentages per stim
+normed_percents = [wakeResults.normalized_percents];
+normed_percents_cell = genotypes;
+
+normed_percents_cell(2:length(stim_times)+1, 1:num_genos) = num2cell(normed_percents(:,:));
+
+% Arousal indices
+arousal_indices_cell = genotypes;
+arousal_indices_cell(2, 1:num_genos) = num2cell([wakeResults.arousal_index]);
+
+% Arousal probabilities
 % Initialize array to hold various probabilities
 arousal_probabilities_array = zeros(max_num_flies,num_genos);
 arousal_probabilities_array(:,:) = NaN;
 
 % Add arousal probabilities for individual flies
 for i = 1:num_genos
-    arousal_probabilities_array(1:length(wakeResults(i).arousal_probabilities),i) = wakeResults(i).arousal_probabilities';
+    arousal_probabilities_array(1:length(wakeResults(i).arousal_probabilities),i)...
+        = wakeResults(i).arousal_probabilities';
 end
 
-% Find group properties
-gp_means = nanmean(arousal_probabilities_array);
-at_prob_mean = nanmean(gp_means);
-at_prob_sd = nanstd(gp_means);
+arousal_probabilities_cell = genotypes;
+arousal_probabilities_cell(2:max_num_flies+1, 1:num_genos)...
+    = num2cell(arousal_probabilities_array(:,:));
+%% Plot everything
 
-% Plot the data
-notBoxPlot2(arousal_probabilities_array);
-title('Arousal probabilities (individual flies)','fontweight','bold');
-hold on; line([0 num_genos+5], [at_prob_mean at_prob_mean], 'Color', 'k');
-line([0 num_genos+5], [at_prob_mean+at_prob_sd at_prob_mean+at_prob_sd], 'Color', [0.8 0.8 0.8]);
-line([0 num_genos+5], [at_prob_mean-at_prob_sd at_prob_mean-at_prob_sd], 'Color', [0.8 0.8 0.8]);
-line([0 num_genos+5], [at_prob_mean+2*at_prob_sd at_prob_mean+2*at_prob_sd], 'Color', [0.6 0.6 0.6]); 
-line([0 num_genos+5], [at_prob_mean-2*at_prob_sd at_prob_mean-2*at_prob_sd], 'Color', [0.6 0.6 0.6]); 
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Probability of arousal');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'arousal-probabilities.fig']))
-
-%% Plot activity data
-
-% Extract deets
-meanSleeping = [activities.meanSleeping];
-meanAwake = [activities.meanAwake];
-
-% Plot stuff!
-figure('Color',[1 1 1]); plot(meanSleeping(1,:),'o','Color','red','markerfacecolor','red','markersize',4);
-hold on; plot(meanSleeping(2,:),'o','Color','blue','markerfacecolor','blue','markersize',4);
-plot(meanSleeping(3,:),'o','Color','k','markerfacecolor','k','markersize',4);
-legend('First minute', 'Second minute', 'Third minute');
-title('Responsiveness of sleeping flies','fontweight','bold');
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Beam crossings/minute');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'asleep-activity.fig']));
-
-figure('Color',[1 1 1]); plot(meanAwake(1,:),'o','Color','red','markerfacecolor','red','markersize',4);
-hold on; plot(meanAwake(2,:),'o','Color','b','markerfacecolor','b','markersize',4);
-plot(meanAwake(3,:),'o','Color','k','markerfacecolor','k','markersize',4);
-legend('First minute', 'Second minute', 'Third minute');
-title('Responsiveness of awake flies','fontweight','bold');
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Beam crossings/minute');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'awake-activity.fig']));
-
-%% Plot latency
-figure('Color',[1 1 1]); plot([latencies.mean],'o','Color','k', 'MarkerFaceColor',[0.5 0.5 0.5],'MarkerSize',5);
-title('Mean latency to sleep following stimulus','fontweight','bold');
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Minutes');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'latencies.fig']));
-
-%% Plot average spontaneous arousals
-
-figure('Color', [1 1 1]); plot([wakeResults.avg_percent_spontaneous], 'ok', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
-title('Mean percent spontaneous arousals','fontweight','bold');
-set(gca,'XTick',1:length(genotypes));
-set(gca,'XTickLabel',genotypes);
-ylabel('Mean percent of flies awakening');
-rotateticklabel(gca,45);
-savefig(gcf, fullfile(save_path, [tag,'avg_spontaneous.fig']));
+makeATGraphs
 
 %% Save stuff
-% Export that data to a csv  
-cell2csv(fullfile(save_path, [tag,'arousal_indices.csv']), arousal_indices);
 
-cell2csv(fullfile(save_path, [tag,'percent_awakened.csv']),normed_percents_cell);
+% Export data to a csv  
+cell2csv(fullfile(save_path, [tag, 'sleep_latency.csv']), latency_cell);
+cell2csv(fullfile(save_path, [tag, 'awake_activities.csv']), awake_activity_cell);
+cell2csv(fullfile(save_path, [tag, 'asleep_activities.csv']), asleep_activity_cell);
+cell2csv(fullfile(save_path, [tag, 'percent_awakened.csv']), normed_percents_cell);
+cell2csv(fullfile(save_path, [tag, 'arousal_indices.csv']), arousal_indices_cell);
+cell2csv(fullfile(save_path, [tag, 'arousal_probabilities.csv']), arousal_probabilities_cell);
 
 % Save the workspace
 save(fullfile(save_path, [tag,'AT-data']));

@@ -1,5 +1,5 @@
 function [arousal_index, normalized_percents, fly_sleeping_sum, activity_struct, sleep_delays, ...
-    fly_sleep_durations, wake_durations, wake_activities, arousal_prob, mean_spontaneous] = ...
+    fly_sleep_durations, wake_durations, wake_activities, arousal_prob, percent_spontaneous_array] = ...
     findWake(fly, expInfo, monitor_dir, norm_offset, sleep_delay, wake_offset, stim_times, bin_width)
 % For each genotype used in a given experiment, imports the monitor
 % containing those flies, parses out on the relevant channels,
@@ -31,7 +31,7 @@ if isempty(flies.data)
     wake_durations = NaN; 
     wake_activities = NaN; 
     arousal_prob = NaN; 
-    mean_spontaneous = NaN;
+    percent_spontaneous_array = NaN;
     return
 end
 
@@ -104,28 +104,26 @@ fly_sleeping_spont = sum(spontaneous_asleep_array,2);
 % the distribution of activities of flies in the minutes following the onset
 % of the AT stim
 
-% initialize new structure to store this data
+% initialize new structure to store this data & default to include activity
+% data for ALL flies
 activity_struct = struct;
-activity_struct(1).asleep = [];
-activity_struct(1).awake = [];
-activity_struct(2).asleep = [];
-activity_struct(2).awake = [];
-activity_struct(3).asleep = [];
-activity_struct(3).awake = [];
+activity_struct(1).asleep = activity_array{1};
+activity_struct(1).awake = activity_array{1};
+activity_struct(2).asleep = activity_array{2};
+activity_struct(2).awake = activity_array{2};
+activity_struct(3).asleep = activity_array{3};
+activity_struct(3).awake = activity_array{3};
 
-for i = 1:length(activity_array)
-   %flies that woke up in response to the stim
-   activity_struct(1).asleep = [activity_struct(1).asleep activity_array{i,1}(fly_arousal_array_raw(i,:))];
-   activity_struct(2).asleep = [activity_struct(2).asleep activity_array{i,2}(fly_arousal_array_raw(i,:))];
-   activity_struct(3).asleep = [activity_struct(3).asleep activity_array{i,3}(fly_arousal_array_raw(i,:))];
+%flies that woke up in response to the stim
+activity_struct(1).asleep(~fly_arousal_array_raw) = NaN;
+activity_struct(2).asleep(~fly_arousal_array_raw) = NaN;
+activity_struct(3).asleep(~fly_arousal_array_raw) = NaN;
 
-   %flies that were awake before the stim
-   activity_struct(1).awake = [activity_struct(1).awake activity_array{i,1}(fly_asleep_array(i,:)==0)];
-   activity_struct(2).awake = [activity_struct(2).awake activity_array{i,2}(fly_asleep_array(i,:)==0)];
-   activity_struct(3).awake = [activity_struct(3).awake activity_array{i,3}(fly_asleep_array(i,:)==0)];
+%flies that were awake before the stim
+activity_struct(1).awake(~fly_asleep_array) = NaN;
+activity_struct(2).awake(~fly_asleep_array) = NaN;
+activity_struct(3).awake(~fly_asleep_array) = NaN;
 
-   
-end
 
 %% Identify sleep latency of the flies who woke up
 
@@ -148,9 +146,7 @@ for i=1:length(percent_arousal_array)
     
 end
 
-% Compute average percent spontaneous arousals (as a kind of metric for how
-% likely the flies are to wake up on their own)
-mean_spontaneous = nanmean(percent_spontaneous_array) * 100;
+percent_spontaneous_array = percent_spontaneous_array';
 
 %% Normalization
 
