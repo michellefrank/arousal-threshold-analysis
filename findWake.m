@@ -67,7 +67,7 @@ end
 fly_awake_array = getIsWakes(flies,arousal_windows);
 [spontaneous_asleep_array,spont_sleep_durations] = getIsSleeping(flies,spontaneous_sleep_windows,bin_width);
 spontaneous_awake_array = getIsWakes(flies,spontaneous_arousal_windows);
-activity_array = getActivity(flies,activity_windows);
+activity_array = getActivity(flies.data,activity_windows);
 
 % Find number of flies awakening in response to each stimulus
 % (and the number of sleeping flies, used below)
@@ -101,7 +101,7 @@ fly_sleeping_spont = sum(spontaneous_asleep_array,2);
 
 %% Separate activity based on flies that were sleeping or already awake
 % Ultimately, returns a struct containing two arrays, each of which contain
-% the distribution of activities of flies in the minute following the onset
+% the distribution of activities of flies in the minutes following the onset
 % of the AT stim
 
 % initialize new structure to store this data
