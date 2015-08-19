@@ -31,7 +31,15 @@ num_files = length(docs);
 % Import that data
 master_data = cell(num_files, 1);
 for i = 1:num_files
+    % Import the genotype info
     master_data{i} = importdata(fullfile(docs{i,1}, docs{i,2}));
+    % Import the rest of the data in a way that preserves the NaNs
+    master_data{i}.data = [];
+    master_data{i}.data = csvread(fullfile(docs{i,1}, docs{i,2}), 1,0);
+    % Delete the colheaders field if matlab decided to add it this time
+    if isfield(master_data{i}, 'colheaders')
+        master_data{i} = rmfield(master_data{i}, 'colheaders');
+    end
 end
 
 % Convert the whole thing to a struct
@@ -58,10 +66,15 @@ epic_data_struct = struct('DataType', unique_types, 'Genotypes', '', 'Data', [])
 
 % Assign each of the individual files to a spot in the struct
 for i = 1:num_types
+    
     epic_data_struct(i).Genotypes = [master_data(unique_type_idxs==i).textdata];
-    epic_data_struct(i).Data = [master_data(unique_type_idxs==i).data];
+    epic_data_struct(i).Data = cell(0,0);
+    for k = find(unique_type_idxs==i)'
+        epic_data_struct(i).Data = [epic_data_struct(i).Data num2cell(master_data(k).data,1)];
+    end
 end
 
+clear i k
 %% Sort by genotype and concatenate overlapping genotypes
 
 for i = 1:num_types
@@ -83,7 +96,7 @@ for i = 1:num_types
     nums = zeros(1, num_genos);
 
     for k = 1:num_genos
-       temp_cell{k} = reshape(epic_data_struct(i).Data(:,u_genos_idxs==k), [], 1);
+       temp_cell{k} = vertcat(epic_data_struct(i).Data{:,u_genos_idxs==k})';
        nums(k) = length(temp_cell{k});
     end
 
@@ -127,6 +140,36 @@ end
 for i = 1:num_types
 
     cell2csv(fullfile(export_path, [cell_struct(i).Name, '-concatenated.csv']), cell_struct(i).Data);
+    
+end
+
+%% Make additional files filtering out all of the negative numbers
+
+% Filter negative values (set lower limit of data to 0)
+epic_NoNeg = epic_data_struct;
+
+for i = 1:num_types
+    epic_NoNeg(i).Data(epic_NoNeg(i).Data<0) = 0;
+end
+
+% Turn into a cell struct for exporting
+cell_struct_NoNeg = struct('Name', unique_types, 'Data', []);
+
+for i = 1:num_types
+
+    data_size = size(epic_NoNeg(i).Data);
+    
+    % Combine data and titles into a single cell
+    cell_struct_NoNeg(i).Data = epic_NoNeg(i).Genotypes;
+    cell_struct_NoNeg(i).Data(2:data_size(1)+1, 1:data_size(2))...
+        = num2cell(epic_NoNeg(i).Data(:,:));
+
+end
+
+% Save the files
+for i = 1:num_types
+
+    cell2csv(fullfile(export_path, [cell_struct_NoNeg(i).Name, '-concatenated-NoNeg.csv']), cell_struct_NoNeg(i).Data);
     
 end
 
